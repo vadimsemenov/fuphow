@@ -22,6 +22,7 @@ import Data.List (splitAt)
 import Control.Monad (join)
 import Data.Char  (isDigit)
 import Data.Foldable (foldr, foldMap, toList)
+import Data.Either (partitionEithers)
 
 plusTwo :: [Int] -> [Int]
 plusTwo = map (+2)
@@ -119,3 +120,16 @@ splitOn sep ls = uncurry (:) $ foldr so ([], []) ls
 
 joinWith :: (Foldable t, Foldable r) => a -> r (t a) -> [a]
 joinWith sep ls = tail $ foldMap ((sep :) . toList) ls
+
+
+-- Block 5
+
+maybeConcat :: [Maybe [a]] -> [a]
+maybeConcat s = maybe [] id $ mconcat s
+
+eitherConcat :: (Monoid a, Monoid b) => [Either a b] -> (a, b)
+eitherConcat s = mconcatPair $ partitionEithers s
+  where
+    mconcatPair :: (Monoid a, Monoid b) => ([a], [b]) -> (a, b)
+    mconcatPair (a, b) = (mconcat a, mconcat b)
+
