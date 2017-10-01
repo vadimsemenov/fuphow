@@ -14,11 +14,14 @@ module Lib
        , stringSum
        , mergeSort
 
+       , splitOn
+       , joinWith
        ) where
 
 import Data.List (splitAt)
 import Control.Monad (join)
 import Data.Char  (isDigit)
+import Data.Foldable (foldr, foldMap, toList)
 
 plusTwo :: [Int] -> [Int]
 plusTwo = map (+2)
@@ -61,7 +64,7 @@ removeAtLite n ls = snd $ removeAt n ls
 
 removeAt :: Int -> [a] -> (Maybe a, [a])
 removeAt n 
-    | n < 0 = fail "Negative index"
+    | n < 0 = error "Negative index"
     | otherwise = removeAt' n
       where
         removeAt' 0 (l : ls) = (Just l, ls)
@@ -104,3 +107,15 @@ merge (f : fs) (s : ss) = if f < s
                           then f : (merge fs (s : ss))
                           else s : (merge (f : fs) ss)
 
+
+-- Block 4
+
+splitOn :: (Foldable t, Eq a) => a -> t a -> [[a]]
+splitOn sep ls = uncurry (:) $ foldr so ([], []) ls
+  where
+    so e (w, ts)
+               | e == sep  = ([], w : ts)
+               | otherwise = (e : w, ts)
+
+joinWith :: (Foldable t, Foldable r) => a -> r (t a) -> [a]
+joinWith sep ls = tail $ foldMap ((sep :) . toList) ls
