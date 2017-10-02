@@ -3,7 +3,7 @@ module Lib
        -- Block 1
        , order3
        , highestBitLite
-       , highestBitHard
+       , highestBit
        , highestBitTrick
        , smartReplicate
        , contains
@@ -42,10 +42,10 @@ order3 = order3' . order3''
     order3'' (a, b, c) = (min a b, max a b, c)
 
 highestBitLite :: (Real a) => a -> Integer
-highestBitLite = fst . highestBitHard
+highestBitLite = fst . highestBit
 
-highestBitHard :: (Real a) => a -> (Integer, Integer)
-highestBitHard = highestBit' 1 0 (-1)
+highestBit :: (Real a) => a -> (Integer, Integer)
+highestBit = highestBit' 1 0 (-1)
   where
     highestBit' :: (Real a) => Integer -> Integer -> Integer -> a -> (Integer, Integer)
     highestBit' cur prev deg n
