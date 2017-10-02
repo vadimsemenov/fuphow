@@ -125,7 +125,9 @@ splitOn sep ls = uncurry (:) $ foldr so ([], []) ls
         | otherwise = (e : w, ts)
 
 joinWith :: (Foldable t, Foldable r) => a -> r (t a) -> [a]
-joinWith sep ls = tail $ foldMap ((sep :) . toList) ls
+joinWith sep ls = if null rs then rs else tail rs
+  where
+    rs = foldMap ((sep :) . toList) ls
 
 
 -- Block 5
