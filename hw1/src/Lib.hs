@@ -1,21 +1,24 @@
 module Lib
        ( plusTwo
-
+       -- Block 1
        , order3
        , highestBitLite
        , highestBitHard
        , highestBitTrick
        , smartReplicate
        , contains
-
+       -- Block 2
        , removeAtLite
        , removeAt
        , collectEvery
        , stringSum
        , mergeSort
-
+       -- Block 4
        , splitOn
        , joinWith
+       -- Block 5
+       , maybeConcat
+       , eitherConcat
        ) where
 
 import Data.List (splitAt)
@@ -24,8 +27,10 @@ import Data.Char  (isDigit)
 import Data.Foldable (foldr, foldMap, toList)
 import Data.Either (partitionEithers)
 
+
 plusTwo :: [Int] -> [Int]
 plusTwo = map (+2)
+
 
 -- Block 1 
 
@@ -50,7 +55,6 @@ highestBitTrick num = (last pows, length pows)
   where
     pows = takeWhile ((> num) . fromInteger) $ iterate (* 2) 1
 
--- TODO
 smartReplicate :: [Int] -> [Int]
 smartReplicate = foldMap $ join replicate
 
@@ -64,13 +68,13 @@ removeAtLite :: Int -> [a] -> [a]
 removeAtLite n ls = snd $ removeAt n ls
 
 removeAt :: Int -> [a] -> (Maybe a, [a])
-removeAt n 
+removeAt n
     | n < 0 = error "Negative index"
     | otherwise = removeAt' n
       where
         removeAt' 0 (l : ls) = (Just l, ls)
         removeAt' _ []       = (Nothing, [])
-        removeAt' i (l : ls) = (fst res, l : (snd res)) 
+        removeAt' i (l : ls) = (fst res, l : (snd res))
           where
             res = removeAt' (i - 1) ls
 
@@ -80,7 +84,7 @@ collectEvery n l = (prefix ++ ps, rf ++ ss)
   where
     (prefix, remainder) = splitAt (n - 1) l
     (rf, rs) = splitAt 1 remainder
-    (ps, ss) = collectEvery n rs 
+    (ps, ss) = collectEvery n rs
 
 stringSum :: String -> Int
 stringSum str = sum $ map read' $ words str

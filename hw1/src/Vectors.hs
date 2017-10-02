@@ -1,6 +1,16 @@
 module Vectors
        ( Vector (..)
        , squaredLen
+       , len
+       , addVec
+       , scalarProduct
+       , negateVec
+       , subVec
+       , squaredDist
+       , dist
+       , crossProduct
+       , toList
+       , fromList
        ) where
 
 
@@ -10,11 +20,8 @@ data Vector a = Vector2D a a | Vector3D a a a
 squaredLen :: (Num a) => Vector a -> a
 squaredLen v = scalarProduct v v
 
-len :: (Floating a) => Vector a -> a
-len = sqrt . squaredLen
-
-lenIntegral :: (Integral a, Floating b) => Vector a -> b
-lenIntegral = sqrt . fromIntegral . sqaredLen
+len :: (Real a, Floating b) => Vector a -> b
+len = sqrt . realToFrac . squaredLen
 
 addVec :: (Num a, Eq a) => Vector a -> Vector a -> Vector a
 addVec x y = fromListSimplify $ zipWith (+) (toNormalizedList x) (toNormalizedList y)
@@ -31,8 +38,8 @@ subVec x y = addVec x (negateVec y)
 squaredDist :: (Num a, Eq a) => Vector a -> Vector a -> a
 squaredDist x y = squaredLen $ subVec x y
 
-dist :: (Floating a, Eq a) => Vector a -> Vector a -> a
-dist x y = sqrt $ squaredDist x y
+dist :: (Real a, Floating b) => Vector a -> Vector a -> b
+dist x y = sqrt . realToFrac $ squaredDist x y
 
 crossProduct :: (Num a, Eq a) => Vector a -> Vector a -> Vector a
 crossProduct x y = cp (normalize x) (normalize y)
@@ -49,6 +56,7 @@ toList (Vector3D x y z) = [x, y, z]
 fromList :: [a] -> Vector a
 fromList [x, y]    = Vector2D x y
 fromList [x, y, z] = Vector3D x y z
+fromList _         = error "Supports only 2D/3D Vectors"
 
 normalize :: (Num a) => Vector a -> Vector a
 normalize (Vector2D x y) = Vector3D x y 0

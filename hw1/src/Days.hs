@@ -13,7 +13,10 @@ import Data.List (elemIndex)
 data Day = MON | TUE | WED | THU | FRI | SAT | SUN
   deriving (Show, Eq)
 
+days  :: [Day]
 days  = [MON, TUE, WED, THU, FRI, SAT, SUN]
+
+days' :: [Day]
 days' = cycle days
 
 nextDay :: Day -> Day

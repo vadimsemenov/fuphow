@@ -1,5 +1,6 @@
 module Nat
-       ( Nat
+       ( Nat (..)
+       , nat2integer
        ) where
 
 data Nat = Z | S Nat
@@ -10,7 +11,7 @@ natAdd n Z     = n
 natAdd n (S m) = natAdd (S n) m
 
 natMul :: Nat -> Nat -> Nat
-natMul n Z = Z
+natMul _ Z = Z
 natMul n (S m) = natAdd n $ natMul n m
 
 natSub :: Nat -> Nat -> Nat

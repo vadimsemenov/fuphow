@@ -39,5 +39,5 @@ resist (Monster at hp) punch
 
 fight :: (Num a, Ord a) => Creature a -> Creature a -> Creature a
 fight assaulter defender = case resist defender (attack assaulter) of
-  Just def  -> fight def assaulter
-  otherwise -> assaulter
+  Just def -> fight def assaulter
+  _        -> assaulter
