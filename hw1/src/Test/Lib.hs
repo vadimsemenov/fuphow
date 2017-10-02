@@ -17,15 +17,15 @@ module Test.Lib
        , testJoinWith'
        , testSplitJoin
        , testMergeSort'
-       , randomIntList 
+       , randomIntList
        ) where
 
-import Prelude hiding (fail)
-import Data.List (sort, permutations)
+import           Data.List     (permutations, sort)
+import           Prelude       hiding (fail)
 import           System.Random (newStdGen, randomRs)
 
-import Lib (order3, highestBit, smartReplicate, contains,
-            removeAt, collectEvery, stringSum, mergeSort, splitOn, joinWith)
+import           Lib           (collectEvery, contains, highestBit, joinWith, mergeSort,
+                                order3, removeAt, smartReplicate, splitOn, stringSum)
 
 
 -- order3
@@ -103,9 +103,9 @@ testStringSumPass input =
 
 stringSumPassTests :: [String]
 stringSumPassTests = [ "1", "1 2 3", " 1", "1 ", "\t1\t", "\t12345\t", "010 020 030"
-            , " 123 456 789 ", "-1", "-1 -2 -3", "\t-12345\t", " -123 -456 -789 "
-            , "\n1\t\n3   555  -1\n\n\n-5", "123\t\n\t\n\t\n321 -4 -40"
-            ]
+                     , " 123 456 789 ", "-1", "-1 -2 -3", "\t-12345\t", " -123 -456 -789 "
+                     , "\n1\t\n3   555  -1\n\n\n-5", "123\t\n\t\n\t\n321 -4 -40"
+                     ]
 
 stringSumMustFail :: [String]
 stringSumMustFail  = ["asd", "1-1", "1.2", "--2", "+1", "1+"]
@@ -135,7 +135,7 @@ testJoinWith' :: (Eq a, Foldable t, Foldable r) => ((a, r (t a)), [a]) -> Bool
 testJoinWith' ((sep, ls), expected) = expected == joinWith sep ls
 
 testSplitJoin :: Bool
-testSplitJoin = testIt "joinWith . splitOn" 
+testSplitJoin = testIt "joinWith . splitOn"
                        (\s -> s == joinWith '/' (splitOn '/' s))
                        [ "path/to/file"
                        , "path/to/dir/"
