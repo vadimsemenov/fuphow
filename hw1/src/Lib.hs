@@ -71,7 +71,7 @@ removeAtLite n ls = snd $ removeAt n ls
 
 removeAt :: Int -> [a] -> (Maybe a, [a])
 removeAt n
-    | n < 0 = error "Negative index"
+    | n < 0     = error "Negative index"
     | otherwise = removeAt' n
   where
     removeAt' 0 (l : ls) = (Just l, ls)
