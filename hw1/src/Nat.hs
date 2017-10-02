@@ -1,6 +1,10 @@
 module Nat
        ( Nat (..)
        , nat2integer
+       , natEven
+       , natDiv
+       , natMod
+       , natGcd
        ) where
 
 data Nat = Z | S Nat
@@ -28,6 +32,29 @@ integer2nat n
     | n < 0     = error "Nat should be not negative"
     | n == 0    = Z
     | otherwise = S $ integer2nat $ n - 1
+
+natEven :: Nat -> Bool
+natEven Z     = True
+natEven (S n) = not (natEven n)
+
+natDiv :: Nat -> Nat -> Nat
+natDiv n d = fst $ natDivRem n d
+
+natMod :: Nat -> Nat -> Nat
+natMod n d = snd $ natDivRem n d
+
+natDivRem :: Nat -> Nat -> (Nat, Nat)
+natDivRem _ 0 = error "Divizion by zero"
+natDivRem n d = ndr n
+  where
+    ndr rest
+        | rest < d  = (0, rest)
+        | otherwise = let (res, rm) = ndr $ natSub rest d
+                      in (natAdd res (S Z), rm)
+
+natGcd :: Nat -> Nat -> Nat
+natGcd a Z = a
+natGcd a b = natGcd b (natMod a b)
 
 instance Eq Nat where
     Z     == Z     = True
