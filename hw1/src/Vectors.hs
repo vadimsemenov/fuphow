@@ -15,7 +15,7 @@ module Vectors
 
 
 data Vector a = Vector2D a a | Vector3D a a a
-  deriving Show
+    deriving Show
 
 squaredLen :: (Num a) => Vector a -> a
 squaredLen v = scalarProduct v v
@@ -30,7 +30,7 @@ scalarProduct :: (Num a) => Vector a -> Vector a -> a
 scalarProduct x y = sum $ zipWith (*) (toNormalizedList x) (toNormalizedList y)
 
 negateVec :: (Num a) => Vector a -> Vector a
-negateVec = fromList . (map negate) . toList
+negateVec = fromList . map negate . toList
 
 subVec :: (Num a, Eq a) => Vector a -> Vector a -> Vector a
 subVec x y = addVec x (negateVec y)
@@ -64,7 +64,7 @@ normalize v              = v
 
 simplify :: (Num a, Eq a) => Vector a -> Vector a
 simplify (Vector3D x y 0) = Vector2D x y
-simplify v                = v 
+simplify v                = v
 
 toNormalizedList :: (Num a) => Vector a -> [a]
 toNormalizedList = toList . normalize

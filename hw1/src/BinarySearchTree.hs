@@ -10,26 +10,27 @@ module BinarySearchTree
        , Tree (..)
        ) where
 
-import           TreePrinters (Tree (..))
-import           Data.Monoid (Sum (..))
 import           Data.Foldable (Foldable (null, toList))
+import           Data.Monoid   (Sum (..))
+import           TreePrinters  (Tree (..))
+
 
 size :: Tree a -> Int
-size = getSum . (foldMap (const $ Sum 1))
+size = getSum . foldMap (const $ Sum 1)
 
 member :: Ord a => a -> Tree a -> Bool
 member _ Leaf = False
 member key (Node val left right)
-  | val == key = True
-  | val < key  = member key right
-  | otherwise  = member key left
+    | val == key = True
+    | val < key  = member key right
+    | otherwise  = member key left
 
 insert :: Ord a => Tree a -> a -> Tree a
 insert Leaf x = Node x Leaf Leaf
 insert (Node val left right) x
-  | val == x  = Node val left right
-  | val < x   = Node val left (insert right x)
-  | otherwise = Node val (insert left x) right
+    | val == x  = Node val left right
+    | val < x   = Node val left (insert right x)
+    | otherwise = Node val (insert left x) right
 
 -- | Works only for Ord
 -- toList . fromList ≡ sort
@@ -38,8 +39,8 @@ fromList []       = Leaf
 fromList (x : xs) = Node x (fromList $ filter (< x) xs) (fromList $ filter (> x) xs)
 
 instance Foldable Tree where
-  foldr _ acc Leaf                  = acc
-  foldr f acc (Node val left right) = foldr f (f val (foldr f acc right)) left
+    foldr _ acc Leaf                  = acc
+    foldr f acc (Node val left right) = foldr f (f val (foldr f acc right)) left
 
-  foldMap _ Leaf         = mempty
-  foldMap f (Node v l r) = foldMap f l `mappend` f v `mappend` foldMap f r
+    foldMap _ Leaf         = mempty
+    foldMap f (Node v l r) = foldMap f l `mappend` f v `mappend` foldMap f r

@@ -6,12 +6,12 @@ module Days
        , daysToParty
        ) where
 
-import Data.Maybe (fromJust)
-import Data.List (elemIndex)
+import           Data.List  (elemIndex)
+import           Data.Maybe (fromJust)
 
 
 data Day = MON | TUE | WED | THU | FRI | SAT | SUN
-  deriving (Show, Eq)
+    deriving (Show, Eq)
 
 days  :: [Day]
 days  = [MON, TUE, WED, THU, FRI, SAT, SUN]
@@ -24,8 +24,8 @@ nextDay currentDay = fromJust $ lookup currentDay $ zip days' (tail days')
 
 afterDays :: Day -> Int -> Day
 afterDays currentDay n
-  | n < 0 = error "Negative number of days"
-  | otherwise = (dropWhile (/= currentDay) days') !! n
+    | n < 0 = error "Negative number of days"
+    | otherwise = dropWhile (/= currentDay) days' !! n
 
 isWeekend :: Day -> Bool
 isWeekend SAT = True

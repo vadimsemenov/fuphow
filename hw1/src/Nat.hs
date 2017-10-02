@@ -11,7 +11,7 @@ natAdd n Z     = n
 natAdd n (S m) = natAdd (S n) m
 
 natMul :: Nat -> Nat -> Nat
-natMul _ Z = Z
+natMul _ Z     = Z
 natMul n (S m) = natAdd n $ natMul n m
 
 natSub :: Nat -> Nat -> Nat
@@ -30,21 +30,21 @@ integer2nat n
     | otherwise = S $ integer2nat $ n - 1
 
 instance Eq Nat where
-  Z     == Z     = True
-  Z     == _     = False
-  _     == Z     = False
-  (S n) == (S m) = n == m
+    Z     == Z     = True
+    Z     == _     = False
+    _     == Z     = False
+    (S n) == (S m) = n == m
 
 instance Ord Nat where
-  compare Z Z         = EQ
-  compare Z _         = LT
-  compare _ Z         = GT
-  compare (S n) (S m) = compare n m
+    compare Z Z         = EQ
+    compare Z _         = LT
+    compare _ Z         = GT
+    compare (S n) (S m) = compare n m
 
 instance Num Nat where
-  (+)         = natAdd
-  (-)         = natSub
-  (*)         = natMul
-  abs         = id
-  signum n    = if n == Z then 0 else 1
-  fromInteger = integer2nat
+    (+)         = natAdd
+    (-)         = natSub
+    (*)         = natMul
+    abs         = id
+    signum n    = if n == Z then 0 else 1
+    fromInteger = integer2nat
