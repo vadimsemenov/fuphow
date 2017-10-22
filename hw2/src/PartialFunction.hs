@@ -12,7 +12,9 @@ module PartialFunction
        , orElse
        ) where
 
-import           Data.Maybe (fromMaybe, isJust)
+import qualified Control.Category as Cat
+import           Control.Monad    ((>=>))
+import           Data.Maybe       (fromMaybe, isJust)
 
 
 data a ~> b
@@ -49,3 +51,8 @@ orElse :: (a ~> b) -> (a ~> b) -> a ~> b
 orElse f g = partial $ \arg -> case apply f arg of
     Just x  -> Just x
     Nothing -> apply g arg
+
+
+instance Cat.Category (~>) where
+    id = total id
+    f . g = partial (apply g >=> apply f)
