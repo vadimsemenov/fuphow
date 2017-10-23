@@ -56,7 +56,7 @@ instance Functor Parser where
     fmap f p = Parser (fmap (first f) . runParser p)
 
 instance Applicative Parser where
-    pure a    = Parser $ \_ -> Just (a, "")
+    pure a    = Parser $ \s -> Just (a, s)
     p1 <*> p2 = Parser (runParser p1 >=> (\(f, rest) ->
         (first f <$> runParser p2 rest)))
 {-
