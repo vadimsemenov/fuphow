@@ -23,6 +23,7 @@ library
                      , PartialFunction
                      , Nondeterministic
                      , Parsers.AParser
+                     , Parsers.SExpr
   ghc-options:         -Wall
   build-depends:       base >= 4.9 && < 5
   default-language:    Haskell2010
