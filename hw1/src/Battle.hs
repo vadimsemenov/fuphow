@@ -41,3 +41,8 @@ fight :: (Num a, Ord a) => Creature a -> Creature a -> Creature a
 fight assaulter defender = case resist defender (attack assaulter) of
     Just def -> fight def assaulter
     _        -> assaulter
+
+battle :: (Num a, Ord a) => Creature a -> Creature a -> Creature a
+battle k@(Knight _ _ _ ) m = fight k m
+battle m k@(Knight _ _ _ ) = fight k m
+battle a b = fight a b
