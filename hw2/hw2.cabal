@@ -19,7 +19,8 @@ tested-with:         GHC == 8.0.1
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
-                     , ArithmeticExpression
+                     , Expressions.ArithmeticExpression
+                     , Expressions.IntArithmeticExpression
                      , PartialFunction
                      , Nondeterministic
                      , Parsers.AParser

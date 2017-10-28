@@ -1,7 +1,7 @@
 {-# LANGUAGE GADTs #-}
 -- {-# LANGUAGE StandaloneDeriving #-}
 
-module ArithmeticExpression
+module Expressions.ArithmeticExpression
        ( Expr (..)
        , ArithmeticError
        , eval
@@ -28,7 +28,9 @@ eval (Const a) = Right a
 eval (Sum x y) = liftA2 (+) (eval x) (eval y)
 eval (Sub x y) = liftA2 (-) (eval x) (eval y)
 eval (Mul x y) = liftA2 (*) (eval x) (eval y)
-eval (Pow x y) = liftA2 (^) (eval x) (eval y)
+eval (Pow x y) = eval y >>= (\t -> if t < 0
+                 then Left "Negative exponent"
+                 else eval x >>= \s -> Right (s ^ t))
 eval (Div x y) = eval y >>= (\t -> if t == 0
                  then Left "Division by zero"
                  else eval x >>= (\s -> Right (s / t)))
