@@ -2,10 +2,10 @@ module NondeterministicSpec
        ( spec
        ) where
 
-import Test.Hspec
+import           Test.Hspec
 
-import Nondeterministic (bin, combinations, permutations)
-import qualified Data.List as L (sort, reverse, permutations)
+import qualified Data.List        as L (permutations, sortBy)
+import           Nondeterministic (bin, combinations, permutations)
 
 
 spec :: Spec
@@ -66,10 +66,14 @@ spec = do
 
     describe "permutations" $ do
         it "works on sample" $
-            (L.reverse . L.sort) (permutations [22, 10, 5]) `shouldBe` [ [22, 10, 5]
+            L.sortBy (flip compare) (permutations [22, 10, 5]) `shouldBe` [ [22, 10, 5]
                                                        , [22, 5, 10]
                                                        , [10, 22, 5]
                                                        , [10, 5, 22]
                                                        , [5, 22, 10]
                                                        , [5, 10, 22]
                                                        ]
+        it "works on empty" $
+            permutations ([] :: [Int]) `shouldBe` ([ [] ] :: [[Int]])
+        it "works on [1]" $
+            permutations [1 :: Int] `shouldBe` [ [1 :: Int] ]
