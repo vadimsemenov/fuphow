@@ -23,6 +23,9 @@ library
                      , Expressions.IntArithmeticExpression
                      , PartialFunction
                      , Nondeterministic
+                     , Monad.Fish
+                     , Monad.Join
+                     , Monad.Hask
                      , Parsers.AParser
                      , Parsers.SExpr
                      , Parsers.ConstantFolding
