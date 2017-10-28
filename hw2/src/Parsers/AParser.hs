@@ -67,6 +67,11 @@ instance Applicative Parser where
         Nothing -> Nothing
 -- -}
 
+instance Monad Parser where
+    return = pure
+    p >>= f = Parser (runParser p >=> \(res, s') ->
+        (runParser (f res) s'))
+
 
 -- Exercise 3
 
