@@ -23,6 +23,7 @@ library
                      , Expressions.IntArithmeticExpression
                      , PartialFunction
                      , Nondeterministic
+                     , ChaoticGood
                      , Monad.Fish
                      , Monad.Join
                      , Monad.Hask
@@ -32,6 +33,7 @@ library
   ghc-options:         -Wall
   build-depends:       base >= 4.9 && < 5
                      , containers
+                     , hw1
   default-language:    Haskell2010
 
 test-suite hw2-test
