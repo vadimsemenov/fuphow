@@ -5,7 +5,7 @@ module Parsers.ConstantFolding
        ) where
 
 import           Parsers.AParser            (Parser (..), char, posInt, satisfy)
-import           Parsers.SExpr              (Ident, ident, oneOrMore, spaces, zeroOrMore)
+import           Parsers.SExpr              (Ident, ident, oneOrMore, zeroOrMore)
 
 import           Control.Applicative        ((<|>))
 import           Control.Monad              (void)
@@ -21,23 +21,25 @@ data Let = Let { getIdent    :: Ident
 data Summand = Const Integer | LetIdent Ident
     deriving (Show, Eq)
 
+
 parseLet :: Parser Let
-parseLet = spaces *> letToken *> spaces_ *> parseLet' <* spaces
+parseLet = spaces' *> letToken *> spaces *> parseLet' <* spaces'
   where
-    spaces_ = oneOrMore (satisfy isSpace)
     letToken = void $ char 'l' *> char 'e' *> char 't'
     eq        = char '='
-    eq'       = spaces *> eq <* spaces
+    eq'       = spaces' *> eq <* spaces'
     plus      = char '+'
-    plus'     = spaces *> plus <* spaces
+    plus'     = spaces' *> plus <* spaces'
     summand   = (Const <$> posInt) <|> (LetIdent <$> ident)
-    parseLet' = Let <$> ident <* eq' <*> ((:) <$> summand <*> zeroOrMore (plus' *> summand))
+    parseLet' = Let <$> ident <* eq' <*> separator summand plus'
 
 parseLets :: Parser [Let]
-parseLets = zeroOrMore parseLet -- TODO: split by lines
+parseLets = whitespaces' *> separator parseLet whitespaces <* whitespaces'
 
 parse :: String -> Maybe [(Ident, Integer)]
-parse input = runParser parseLets input >>= \(lets, _) -> parse' Map.empty lets
+parse input = runParser parseLets input >>= \(lets, rest) -> if not $ null rest
+    then Nothing
+    else parse' Map.empty lets
   where
     parse' :: Map.InsOrdHashMap Ident Integer -> [Let] -> Maybe [(Ident, Integer)]
     parse' letMap []        = Just $ Map.toList letMap
@@ -57,6 +59,29 @@ formatLets ls = unlines $ map (format (maximum $ map (length . fst) ls)) ls
   where
     format ml (i, val) = "let " ++ padId ++ " = " ++ show val
       where padId = i ++ replicate (ml - length i) ' '
+
+-- Aux functions
+
+separator :: Parser a -> Parser sep -> Parser [a]
+separator token sep = (:) <$> token <*> zeroOrMore (sep *> token)
+
+whitespace :: Parser Char
+whitespace = satisfy isSpace
+
+space :: Parser Char
+space = satisfy (\c -> c /= '\n' && isSpace c)
+
+spaces' :: Parser String
+spaces' = zeroOrMore space
+
+spaces :: Parser String
+spaces = oneOrMore space
+
+whitespaces' :: Parser String
+whitespaces' = zeroOrMore whitespace
+
+whitespaces :: Parser String
+whitespaces = oneOrMore whitespace
 
 
 main :: IO ()
