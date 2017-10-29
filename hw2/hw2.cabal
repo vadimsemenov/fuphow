@@ -32,6 +32,7 @@ library
   ghc-options:         -Wall
   build-depends:       base >= 4.9 && < 5
                      , containers
+                     , insert-ordered-containers
                      , hw1
   default-language:    Haskell2010
 

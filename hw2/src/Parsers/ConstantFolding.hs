@@ -4,13 +4,13 @@ module Parsers.ConstantFolding
        , main
        ) where
 
-import           Parsers.AParser     (Parser (..), char, posInt, satisfy)
-import           Parsers.SExpr       (Ident, ident, oneOrMore, spaces, zeroOrMore)
+import           Parsers.AParser            (Parser (..), char, posInt, satisfy)
+import           Parsers.SExpr              (Ident, ident, oneOrMore, spaces, zeroOrMore)
 
-import           Control.Applicative ((<|>))
-import           Control.Monad       (void)
-import           Data.Char           (isSpace)
-import qualified Data.Map            as Map
+import           Control.Applicative        ((<|>))
+import           Control.Monad              (void)
+import           Data.Char                  (isSpace)
+import qualified Data.HashMap.Strict.InsOrd as Map
 
 
 data Let = Let { getIdent    :: Ident
@@ -39,7 +39,7 @@ parseLets = zeroOrMore parseLet -- TODO: split by lines
 parse :: String -> Maybe [(Ident, Integer)]
 parse input = runParser parseLets input >>= \(lets, _) -> parse' Map.empty lets
   where
-    parse' :: Map.Map Ident Integer -> [Let] -> Maybe [(Ident, Integer)]
+    parse' :: Map.InsOrdHashMap Ident Integer -> [Let] -> Maybe [(Ident, Integer)]
     parse' letMap []        = Just $ Map.toList letMap
     parse' letMap (lh : ls) = eval (getSummands lh) >>= \value ->
         parse' (Map.insert (getIdent lh) value letMap) ls
