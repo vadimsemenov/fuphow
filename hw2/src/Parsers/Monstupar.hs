@@ -11,7 +11,7 @@ module Parsers.Monstupar
 
 import           Control.Applicative (Alternative (..))
 import           Control.Monad       (void, (>=>))
-import           Data.Char           (isDigit, isUpper)
+import           Data.Char           (isAlpha, isAlphaNum, isDigit, isSpace, isUpper)
 
 
 newtype ParseError = ParseError String
@@ -72,3 +72,43 @@ abParser_ = void abParser
 
 intOrUppercase :: Monstupar Char ()
 intOrUppercase = void posInt <|> void (satisfy isUpper)
+
+zeroOrMore :: Monstupar s a -> Monstupar s [a]
+zeroOrMore parser = oneOrMore parser <|> pure []
+
+oneOrMore :: Monstupar s a -> Monstupar s [a]
+oneOrMore parser = (:) <$> parser <*> zeroOrMore parser
+
+spaces :: Monstupar Char String
+spaces = zeroOrMore $ satisfy isSpace
+
+spaces' :: Monstupar Char String
+spaces' = oneOrMore $ satisfy isSpace
+
+ident :: Monstupar Char String
+ident = (:) <$> satisfy isAlpha <*> zeroOrMore (satisfy isAlphaNum)
+
+
+type Ident = String
+
+data Atom = N Integer | I Ident
+    deriving Show
+
+data SExpr = A Atom
+           | Comb [SExpr]
+    deriving Show
+
+parseAtom :: Monstupar Char Atom
+parseAtom = I <$> ident <|> N <$> posInt
+
+parseSExpr :: Monstupar Char SExpr
+parseSExpr = spaces *> parseSExpr' <* spaces
+  where
+    parseSExpr' = A <$> parseAtom <|> parseComb
+    parseComb   = open *> spaces *> parseComb' <* spaces <* close
+    parseComb'  = Comb <$> separate parseSExpr' spaces'
+    open        = char '('
+    close       = char ')'
+
+separate :: Monstupar s a -> Monstupar s b -> Monstupar s [a]
+separate token separator = (:) <$> token <*> zeroOrMore (separator *> token)
