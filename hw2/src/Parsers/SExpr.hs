@@ -39,11 +39,11 @@ ident = (:) <$> satisfy isAlpha <*> zeroOrMore (satisfy isAlphaNum)
 type Ident = String
 
 data Atom = N Integer | I Ident
-    deriving Show
+    deriving (Show, Eq)
 
 data SExpr = A Atom
            | Comb [SExpr]
-    deriving Show
+    deriving (Show, Eq)
 
 parseAtom :: Parser Atom
 parseAtom = N <$> posInt <|> I <$> ident
@@ -51,5 +51,7 @@ parseAtom = N <$> posInt <|> I <$> ident
 parseSExpr :: Parser SExpr
 parseSExpr = spaces *> parseSExpr' <* spaces
   where
-    parseSExpr'  = (A <$> parseAtom) <|> char '(' *> parseSExpr'' <* char ')'
-    parseSExpr'' = Comb <$> zeroOrMore parseSExpr
+    parseSExpr'   = (A <$> parseAtom) <|> char '(' *> parseSExpr'' <* char ')'
+    parseSExpr''  = Comb <$> (parseSExpr''' <|> pure [])
+    parseSExpr''' = (:) <$> (spaces *> parseSExpr') <*> zeroOrMore (spaces' *> parseSExpr') <* spaces
+    spaces'       = oneOrMore $ satisfy isSpace
