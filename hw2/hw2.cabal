@@ -50,4 +50,5 @@ test-suite hw2-test
                      , Expressions.IntArithmeticExpressionSpec
                      , Parsers.AParserSpec
                      , Parsers.SExprSpec
+                     , Parsers.ConstantFoldingSpec
   default-language:    Haskell2010
