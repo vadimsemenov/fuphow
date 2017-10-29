@@ -81,8 +81,8 @@ abParser = (,) <$> char 'a' <*> char 'b'
 abParser_ :: Parser ()
 abParser_ = void abParser
 
-intPair :: Parser (Integer, Integer)
-intPair = (,) <$> (posInt <* char ' ') <*> posInt
+intPair :: Parser [Integer]
+intPair = (:) <$> (posInt <* char ' ') <*> (pure <$> posInt)
 
 
 -- Exercise 4
