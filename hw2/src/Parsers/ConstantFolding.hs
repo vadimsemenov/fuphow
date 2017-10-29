@@ -1,7 +1,5 @@
 module Parsers.ConstantFolding
-       ( parseLet
-       , parseLets
-       , parse
+       ( parse
        , formatLets
        , main
        ) where
@@ -28,11 +26,11 @@ parseLet = spaces *> letToken *> spaces_ *> parseLet' <* spaces
   where
     spaces_ = oneOrMore (satisfy isSpace)
     letToken = void $ char 'l' *> char 'e' *> char 't'
-    eq = char '='
-    eq' = spaces *> eq <* spaces
-    plus = char '+'
-    plus' = spaces *> plus <* spaces
-    summand = (Const <$> posInt) <|> (LetIdent <$> ident)
+    eq        = char '='
+    eq'       = spaces *> eq <* spaces
+    plus      = char '+'
+    plus'     = spaces *> plus <* spaces
+    summand   = (Const <$> posInt) <|> (LetIdent <$> ident)
     parseLet' = Let <$> ident <* eq' <*> ((:) <$> summand <*> zeroOrMore (plus' *> summand))
 
 parseLets :: Parser [Let]
@@ -42,7 +40,7 @@ parse :: String -> Maybe [(Ident, Integer)]
 parse input = runParser parseLets input >>= \(lets, _) -> parse' Map.empty lets
   where
     parse' :: Map.Map Ident Integer -> [Let] -> Maybe [(Ident, Integer)]
-    parse' letMap []       = Just $ Map.toList letMap
+    parse' letMap []        = Just $ Map.toList letMap
     parse' letMap (lh : ls) = eval (getSummands lh) >>= \value ->
         parse' (Map.insert (getIdent lh) value letMap) ls
       where
@@ -52,7 +50,7 @@ parse input = runParser parseLets input >>= \(lets, _) -> parse' Map.empty lets
 
         eval' :: Summand -> Maybe Integer
         eval' (LetIdent i) = Map.lookup i letMap
-        eval' (Const int)   = Just int
+        eval' (Const int)  = Just int
 
 formatLets :: [(Ident, Integer)] -> String
 formatLets ls = unlines $ map (format (maximum $ map (length . fst) ls)) ls
@@ -60,5 +58,6 @@ formatLets ls = unlines $ map (format (maximum $ map (length . fst) ls)) ls
     format ml (i, val) = "let " ++ padId ++ " = " ++ show val
       where padId = i ++ replicate (ml - length i) ' '
 
+
 main :: IO ()
-main = interact $ \input -> maybe "Failed" formatLets (parse input)
+main = getContents >>= \input -> putStrLn $ maybe "Failed" formatLets (parse input)
