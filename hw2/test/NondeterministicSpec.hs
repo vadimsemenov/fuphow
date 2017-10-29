@@ -27,6 +27,8 @@ spec = do
                             , [ 1 , 1 , 0 ]
                             , [ 1 , 1 , 1 ]
                             ]
+        it "works on large input" $
+            (take 5 $ map last $ bin 100) `shouldBe` [0, 1, 0, 1, 0]
 
     describe "combinations" $ do
         context "on negative numbers" $ do
@@ -63,6 +65,8 @@ spec = do
                                             ]
             it "works when k = 100500" $
                 combinations 4 100500 `shouldBe` [ ]
+        it "woks on large input" $
+            (take 5 $ map last $ combinations 500 100) `shouldBe` [100 .. 104]
 
     describe "permutations" $ do
         it "works on sample" $
@@ -77,3 +81,5 @@ spec = do
             permutations ([] :: [Int]) `shouldBe` ([ [] ] :: [[Int]])
         it "works on [1]" $
             permutations [1 :: Int] `shouldBe` [ [1 :: Int] ]
+--        it "works on infinite list" $
+--            (take 5 $ map (take 5) $ permutations [1.. ]) `shouldBe` [[]]
