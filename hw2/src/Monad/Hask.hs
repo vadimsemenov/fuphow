@@ -1,12 +1,16 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE NoImplicitPrelude    #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module Monad.Hask
-       (
+       ( Functor (..)
+       , Monad (..)
+       , MonadFish (..)
+       , MonadJoin (..)
+       , bind
        ) where
 
-import Prelude (id, (.))
+import           Prelude (id, (.))
 
 
 class Functor f where
@@ -45,7 +49,18 @@ class MonadJoin m where
         1. join . returnJoin      ≡ id
         2. join . fmap returnJoin ≡ id
         3. join . fmap join       ≡ join . join
+        4* join . fmap (fmap f)   ≡ fmap f . join
     -}
+
+
+{-  LAWS
+    1. bind return = id
+    2. bind f . return = f
+    3. bind g . bind f ≡ bind (bind g . f)
+-}
+bind :: Monad m => (a -> m b) -> m a -> m b
+bind f m = m >>= f
+
 
 instance Monad m => MonadFish m where
     returnFish = return
@@ -53,28 +68,24 @@ instance Monad m => MonadFish m where
 
 {-
 1. f >=> returnFish === f
-f >=> returnFish === \a -> f a >>= returnFish
-returnFish === return
-\a -> f a >>= returnFish === \a -> f a >>= return
-\a -> f a >>= return === \a -> f a
-\a -> f a === f
-f >=> returnFish === f
--}
 
-bind f m = m >>= f
+f >=> returnFish === \a -> f a >>= returnFish  -- Definition of >=>
+                 === \a -> f a >>= return      -- Definition of returnFish
+                 === \a -> f a                 -- First law of Monad
+                 === f                         -- η-conversion
+-}
 
 instance Monad f => Functor f where
     fmap f = bind (return . f)
 
 instance Monad m => MonadJoin m where
     returnJoin = return
-    join m     = m >>= id
+    join       = bind id
 
 {-
 1. join . returnJoin === id
-join (returnJoin a) === returnJoin a >>= id
-returnJoin === return
-returnJoin a >>= id === return a >>= id
-return a >>= id === id a
-join . returnJoin === id
+
+join . retufnJoin === bind id . returnJoin  -- Definition of join
+                  === bind id . return      -- Definition of returnJoin
+                  === id                    -- Second law of Monad
 -}
