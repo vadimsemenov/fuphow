@@ -56,3 +56,46 @@ orElse f g = partial $ \arg -> case apply f arg of
 instance Cat.Category (~>) where
     id = total id
     f . g = partial (apply g >=> apply f)
+
+{-
+
+The identity morphism
+f ∘ id ≡ id ∘ f ≡ f
+
+apply (f ∘ id) ≡ apply (f ∘ total id)                                           -- Definition of id
+               ≡ apply (f ∘ (Partial $ return ∘ id))                            -- Definition of total
+               ≡ apply (partial ((apply (Partial $ return ∘ id)) >=> apply f))  -- Definition of ∘
+               ≡ apply (partial ((return ∘ id) >=> apply f))                    -- Definition of apply
+               ≡ apply (partial (return >=> apply f))                           -- Law of identity
+               ≡ apply (partial (apply f))                                      -- Second law of MonadFish
+1/
+               ≡ apply (partial (apply f))
+               ≡ apply (Partial (apply f))                                      -- Definition of partial
+               ≡ apply f                                                        -- Definition of apply
+2/
+               ≡ apply (partial (apply f))
+               ≡ apply (partial (apply f >=> return))                           -- First law of MonadFish
+               ≡ apply (partial (apply f >=> (return ∘ id)))                    -- Law of identity
+               ≡ apply (partial (apply f >=> (apply (Partial $ return ∘ id))))  -- Definition of apply
+               ≡ apply ((Partial $ return ∘ id) ∘ f)                            -- Definition of ∘
+               ≡ apply ((total id) ∘ f)                                         -- Definition of total
+               ≡ apply (id ∘ f)                                                 -- Definition of id
+
+Morphism composition
+(f ∘ g) ∘ h ≡ f ∘ (g ∘ h)
+
+apply $ (f ∘ g) ∘ h ≡ apply $ partial (apply h >=> apply (f ∘ g))               -- Definition of ∘
+                    ≡ apply $ Partial (apply h >=> apply (f ∘ g))               -- Definition of partial
+                    ≡ apply h >=> apply (f ∘ g)                                 -- Definition of apply
+                    ≡ apply h >=> apply (partial (apply g >=> apply f))         -- Definition of ∘
+                    ≡ apply h >=> apply (Partial (apply g >=> apply f))         -- Definition of partial
+                    ≡ apply h >=> (apply g >=> apply f)                         -- Definition of apply
+                    ≡ (apply h >=> apply g) >=> apply f                         -- Third law (associativity) of fish
+                    ≡ apply (Partial (apply h >=> apply g)) >=> apply f         -- Definition of apply
+                    ≡ apply (partial (apply h >=> apply g)) >=> apply f         -- Definition of partial
+                    ≡ apply (g ∘ h) >=> apply f                                 -- Definition of ∘
+                    ≡ apply $ Partial (apply (g ∘ h) >=> apply f)               -- Definition of apply
+                    ≡ apply $ partial (apply (g ∘ h) >=> apply f)               -- Definition of partial
+                    ≡ apply $ f ∘ (g ∘ h)                                       -- Definition of ∘
+
+-}
