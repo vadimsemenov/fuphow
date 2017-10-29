@@ -29,6 +29,7 @@ library
                      , Parsers.AParser
                      , Parsers.SExpr
                      , Parsers.ConstantFolding
+                     , Parsers.Monstupar
   ghc-options:         -Wall
   build-depends:       base >= 4.9 && < 5
                      , containers
