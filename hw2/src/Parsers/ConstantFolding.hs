@@ -1,37 +1,34 @@
 module Parsers.ConstantFolding
-       ( parse
+       ( Let (..)
+       , parse
        , formatLets
        , main
        ) where
 
-import           Parsers.AParser            (Parser (..), char, posInt, satisfy)
-import           Parsers.SExpr              (Ident, ident, oneOrMore, zeroOrMore)
+import           Parsers.AParser            (Parser (..), char, satisfy)
+import           Parsers.SExpr              (Atom (..), Ident, ident, oneOrMore,
+                                             parseAtom, zeroOrMore)
 
-import           Control.Applicative        ((<|>))
 import           Control.Monad              (void)
 import           Data.Char                  (isSpace)
 import qualified Data.HashMap.Strict.InsOrd as Map
 
 
-data Let = Let { getIdent    :: Ident
-               , getSummands :: [Summand]
+data Let = Let { getIdent :: Ident
+               , getAtoms :: [Atom]
                }
-    deriving (Show, Eq)
-
-data Summand = Const Integer | LetIdent Ident
     deriving (Show, Eq)
 
 
 parseLet :: Parser Let
 parseLet = spaces' *> letToken *> spaces *> parseLet' <* spaces'
   where
-    letToken = void $ char 'l' *> char 'e' *> char 't'
+    letToken  = void $ char 'l' *> char 'e' *> char 't'
     eq        = char '='
     eq'       = spaces' *> eq <* spaces'
     plus      = char '+'
     plus'     = spaces' *> plus <* spaces'
-    summand   = (Const <$> posInt) <|> (LetIdent <$> ident)
-    parseLet' = Let <$> ident <* eq' <*> separator summand plus'
+    parseLet' = Let <$> ident <* eq' <*> separator parseAtom plus'
 
 parseLets :: Parser [Let]
 parseLets = whitespaces' *> separator parseLet whitespaces <* whitespaces'
@@ -43,16 +40,15 @@ parse input = runParser parseLets input >>= \(lets, rest) -> if not $ null rest
   where
     parse' :: Map.InsOrdHashMap Ident Integer -> [Let] -> Maybe [(Ident, Integer)]
     parse' letMap []        = Just $ Map.toList letMap
-    parse' letMap (lh : ls) = eval (getSummands lh) >>= \value ->
+    parse' letMap (lh : ls) = eval (getAtoms lh) >>= \value ->
         parse' (Map.insert (getIdent lh) value letMap) ls
       where
-        eval :: [Summand] -> Maybe Integer
+        eval :: [Atom] -> Maybe Integer
         eval l = if null l then Nothing
-                 else foldr (\s acc -> (+) <$> eval' s <*> acc) (Just 0) l
-
-        eval' :: Summand -> Maybe Integer
-        eval' (LetIdent i) = Map.lookup i letMap
-        eval' (Const int)  = Just int
+                 else sum <$> sequence (eval' <$> l)
+        eval' :: Atom -> Maybe Integer
+        eval' (I i)   = Map.lookup i letMap
+        eval' (N int) = Just int
 
 formatLets :: [(Ident, Integer)] -> String
 formatLets ls = unlines $ map (format (maximum $ map (length . fst) ls)) ls

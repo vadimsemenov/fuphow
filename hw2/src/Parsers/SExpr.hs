@@ -8,6 +8,7 @@ module Parsers.SExpr
        , Ident
        , Atom (..)
        , SExpr (..)
+       , parseAtom
        , parseSExpr
        ) where
 

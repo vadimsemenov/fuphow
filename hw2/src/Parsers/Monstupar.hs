@@ -15,6 +15,7 @@ module Parsers.Monstupar
        , parseAtom
        , parseSExpr
        , constantFoldingParser
+       , formatLets
        ) where
 
 import           Control.Applicative        (Alternative (..))
@@ -23,6 +24,9 @@ import           Data.Char                  (isAlpha, isAlphaNum, isDigit, isSpa
                                              isUpper)
 import           Data.Either.Utils          (maybeToEither)
 import qualified Data.HashMap.Strict.InsOrd as Map
+
+import           Parsers.ConstantFolding    (Let (..), formatLets)
+import           Parsers.SExpr              (Atom (..), Ident, SExpr (..))
 
 
 newtype ParseError = ParseError String
@@ -100,15 +104,6 @@ ident :: Monstupar Char String
 ident = (:) <$> satisfy isAlpha <*> zeroOrMore (satisfy isAlphaNum)
 
 
-type Ident = String
-
-data Atom = N Integer | I Ident
-    deriving Show
-
-data SExpr = A Atom
-           | Comb [SExpr]
-    deriving Show
-
 parseAtom :: Monstupar Char Atom
 parseAtom = I <$> ident <|> N <$> posInt
 
@@ -125,22 +120,17 @@ separate :: Monstupar s a -> Monstupar s b -> Monstupar s [a]
 separate token separator = (:) <$> token <*> zeroOrMore (separator *> token)
 
 
-data Let = Let { getIdent :: Ident
-               , getAtoms :: [Atom]
-               }
-    deriving (Show)
-
 parseLet :: Monstupar Char Let
 parseLet = spaces *> parseLet' <* spaces
   where
-    parseLet' = Let <$> (letToken *> spaces_' *> ident <* eq')
-                    <*> (spaces_ *> parseLetRhs <* spaces_)
+    parseLet'   = Let <$> (letToken *> spaces_' *> ident <* eq')
+                      <*> (spaces_ *> parseLetRhs <* spaces_)
     parseLetRhs = separate parseAtom plus'
-    letToken = void $ char 'l' *> char 'e' *> char 't'
-    eq = char '='
-    eq' = spaces_ *> eq <* spaces_
-    plus = char '+'
-    plus' = spaces_ *> plus <* spaces_
+    letToken    = void $ char 'l' *> char 'e' *> char 't'
+    eq          = char '='
+    eq'         = spaces_ *> eq <* spaces_
+    plus        = char '+'
+    plus'       = spaces_ *> plus <* spaces_
 
 parseLets :: Monstupar Char [Let]
 parseLets = spaces *> separate parseLet spaces <* spaces
@@ -161,9 +151,7 @@ eval [] letMap = Just letMap
 eval (l : ls) letMap = eval' l >>= (\val ->
     eval ls (Map.insert (getIdent l) val letMap))
   where
-    eval' :: Let -> Maybe Integer
     eval' (Let _ rhs) = sum <$> sequence (eval'' <$> rhs)
-    eval'' :: Atom -> Maybe Integer
     eval'' (N int) = Just int
     eval'' (I var) = Map.lookup var letMap
 
