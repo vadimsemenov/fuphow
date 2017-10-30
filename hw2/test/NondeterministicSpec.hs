@@ -70,13 +70,14 @@ spec = do
 
     describe "permutations" $ do
         it "works on sample" $
-            L.sortBy (flip compare) (permutations [22, 10, 5]) `shouldBe` [ [22, 10, 5]
-                                                       , [22, 5, 10]
-                                                       , [10, 22, 5]
-                                                       , [10, 5, 22]
-                                                       , [5, 22, 10]
-                                                       , [5, 10, 22]
-                                                       ]
+            L.sortBy (flip compare) (permutations [22, 10, 5])
+                `shouldBe` [ [22, 10, 5]
+                           , [22, 5, 10]
+                           , [10, 22, 5]
+                           , [10, 5, 22]
+                           , [5, 22, 10]
+                           , [5, 10, 22]
+                           ]
         it "works on empty" $
             permutations ([] :: [Int]) `shouldBe` ([ [] ] :: [[Int]])
         it "works on [1]" $
