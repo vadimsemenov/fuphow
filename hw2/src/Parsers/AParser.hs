@@ -178,6 +178,36 @@ intPair = (:) <$> (posInt <* char ' ') <*> (pure <$> posInt)
 
 -- Exercise 4
 
+{-
+1. empty <|> f ≡ f <|> empty = f
+            -- Definition of <|>
+empty <|> f ≡ Parser $ \s -> runParser empty s <|> runParser f s
+            -- Definition of empty
+            ≡ Parser $ \s -> runParser (Parser $ const Nothing) s <|> runParser f s
+            -- Definition of runParser
+            ≡ Parser $ \s -> Nothing <|> runParser f s
+
+            ≡ Parser $ \s -> Nothing <|> runParser f s
+            -- Identity law for Maybe
+            ≡ Parser $ \s -> runParser f s
+            -- Eta reduction
+            ≡ Parser $ runParser f
+            -- Definition of runParser
+            ≡ f
+
+            ≡ Parser $ \s -> Nothing <|> runParser f s
+            -- Identity law for Maybe
+            ≡ Parser $ \s -> runParser f s <|> Nothing
+            -- Definition of runParser
+            ≡ Parser $ \s -> runParser f s <|> runParser (Parser $ const Nothing) s
+            -- Definition of empty
+            ≡ Parser $ \s -> runParser f s <|> runParser empty s
+            -- Definition of <|>
+            ≡ f <|> empty
+
+2. (f <|> g) <|> h ≡ f <|> (g <|> h)
+-}
+
 instance Alternative Parser where
     empty     = Parser $ const Nothing
     p1 <|> p2 = Parser $ \s -> runParser p1 s <|> runParser p2 s
