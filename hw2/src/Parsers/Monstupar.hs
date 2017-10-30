@@ -1,17 +1,28 @@
+{-# LANGUAGE TupleSections #-}
+
 module Parsers.Monstupar
        ( Monstupar (..)
        , ParseError
+       , Atom (..)
+       , SExpr (..)
+       , Let (..)
        , satisfy
        , char
        , posInt
        , abParser
        , abParser_
        , intOrUppercase
+       , parseAtom
+       , parseSExpr
+       , constantFoldingParser
        ) where
 
-import           Control.Applicative (Alternative (..))
-import           Control.Monad       (void, (>=>))
-import           Data.Char           (isAlpha, isAlphaNum, isDigit, isSpace, isUpper)
+import           Control.Applicative        (Alternative (..))
+import           Control.Monad              (void, (>=>))
+import           Data.Char                  (isAlpha, isAlphaNum, isDigit, isSpace,
+                                             isUpper)
+import           Data.Either.Utils          (maybeToEither)
+import qualified Data.HashMap.Strict.InsOrd as Map
 
 
 newtype ParseError = ParseError String
@@ -112,3 +123,55 @@ parseSExpr = spaces *> parseSExpr' <* spaces
 
 separate :: Monstupar s a -> Monstupar s b -> Monstupar s [a]
 separate token separator = (:) <$> token <*> zeroOrMore (separator *> token)
+
+
+data Let = Let { getIdent :: Ident
+               , getAtoms :: [Atom]
+               }
+    deriving (Show)
+
+parseLet :: Monstupar Char Let
+parseLet = spaces *> parseLet' <* spaces
+  where
+    parseLet' = Let <$> (letToken *> spaces_' *> ident <* eq')
+                    <*> (spaces_ *> parseLetRhs <* spaces_)
+    parseLetRhs = separate parseAtom plus'
+    letToken = void $ char 'l' *> char 'e' *> char 't'
+    eq = char '='
+    eq' = spaces_ *> eq <* spaces_
+    plus = char '+'
+    plus' = spaces_ *> plus <* spaces_
+
+parseLets :: Monstupar Char [Let]
+parseLets = spaces *> separate parseLet spaces <* spaces
+
+cfParser :: Monstupar Char (Map.InsOrdHashMap Ident Integer)
+cfParser = parseLets >>= (\lets -> Monstupar $ \s -> if not $ null s
+                             then Left $ ParseError "Couldn't parse entire input"
+                             else maybeToEither
+                                  (ParseError "Error while constant folding")
+                                  ((s,) <$> eval lets Map.empty))
+
+constantFoldingParser :: Monstupar Char [(Ident, Integer)]
+constantFoldingParser = Map.toList <$> cfParser
+
+eval :: [Let] -> Map.InsOrdHashMap Ident Integer
+              -> Maybe (Map.InsOrdHashMap Ident Integer)
+eval [] letMap = Just letMap
+eval (l : ls) letMap = eval' l >>= (\val ->
+    eval ls (Map.insert (getIdent l) val letMap))
+  where
+    eval' :: Let -> Maybe Integer
+    eval' (Let _ rhs) = sum <$> sequence (eval'' <$> rhs)
+    eval'' :: Atom -> Maybe Integer
+    eval'' (N int) = Just int
+    eval'' (I var) = Map.lookup var letMap
+
+space_ :: Monstupar Char Char
+space_ = satisfy (\c -> c /= '\n' && isSpace c)
+
+spaces_ :: Monstupar Char String
+spaces_ = zeroOrMore space_
+
+spaces_' :: Monstupar Char String
+spaces_' = oneOrMore space_
