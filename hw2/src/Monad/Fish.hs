@@ -84,6 +84,7 @@ instance MonadFish m => MonadJoin m where
 
 join . returnJoin === (id >=> id) . returnJoin
                   === (id >=> id) . returnFish
+                  === (>=> id) . id . returnFish
                   === TODO
 
 2. join . fmap returnJoin === id
