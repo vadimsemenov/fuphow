@@ -2,7 +2,8 @@
 
 module Parsers.Monstupar
        ( Monstupar (..)
-       , ParseError
+       , ParseError (..)
+       , Ident
        , Atom (..)
        , SExpr (..)
        , Let (..)
@@ -11,7 +12,12 @@ module Parsers.Monstupar
        , posInt
        , abParser
        , abParser_
+       , intPair
        , intOrUppercase
+       , oneOrMore
+       , zeroOrMore
+       , spaces
+       , ident
        , parseAtom
        , parseSExpr
        , constantFoldingParser
@@ -30,7 +36,7 @@ import           Parsers.SExpr              (Atom (..), Ident, SExpr (..))
 
 
 newtype ParseError = ParseError String
-    deriving (Show)
+    deriving (Show, Eq)
 
 newtype Monstupar s a = Monstupar { runParser :: [s] -> Either ParseError ([s], a) }
 
@@ -74,7 +80,7 @@ posInt :: Monstupar Char Integer
 posInt = Monstupar f
   where
     f xs
-        | null ns   = Left $ ParseError "Unexpected EOF in posInt"
+        | null ns   = Left $ ParseError ("Cannot parse Integer from rest = '" ++ xs ++ "'")
         | otherwise = Right (rest, read ns)
       where
         (ns, rest) = span isDigit xs
@@ -84,6 +90,9 @@ abParser = (,) <$> char 'a' <*> char 'b'
 
 abParser_ :: Monstupar Char ()
 abParser_ = void abParser
+
+intPair :: Monstupar Char [Integer]
+intPair = (:) <$> (posInt <* spaces) <*> (pure <$> posInt)
 
 intOrUppercase :: Monstupar Char ()
 intOrUppercase = void posInt <|> void (satisfy isUpper)
@@ -121,7 +130,7 @@ separate token separator = (:) <$> token <*> zeroOrMore (separator *> token)
 
 
 parseLet :: Monstupar Char Let
-parseLet = spaces *> parseLet' <* spaces
+parseLet = spaces_ *> parseLet' <* spaces_
   where
     parseLet'   = Let <$> (letToken *> spaces_' *> ident <* eq')
                       <*> (spaces_ *> parseLetRhs <* spaces_)
@@ -133,7 +142,7 @@ parseLet = spaces *> parseLet' <* spaces
     plus'       = spaces_ *> plus <* spaces_
 
 parseLets :: Monstupar Char [Let]
-parseLets = spaces *> separate parseLet spaces <* spaces
+parseLets = spaces *> separate parseLet spaces' <* spaces
 
 cfParser :: Monstupar Char (Map.InsOrdHashMap Ident Integer)
 cfParser = parseLets >>= (\lets -> Monstupar $ \s -> if not $ null s
