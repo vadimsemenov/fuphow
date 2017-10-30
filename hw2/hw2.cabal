@@ -53,4 +53,5 @@ test-suite hw2-test
                      , Parsers.AParserSpec
                      , Parsers.SExprSpec
                      , Parsers.ConstantFoldingSpec
+                     , Parsers.MonstuparSpec
   default-language:    Haskell2010
