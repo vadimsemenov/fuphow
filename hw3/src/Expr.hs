@@ -1,15 +1,16 @@
--- {-# LANGUAGE DeriveFunctor #-}
--- {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Expr
        ( Expr (..)
        , eval
-       , Eval
-       , runEval
+       , doEval
+       , Eval (..)
        ) where
 
-import           Control.Monad.Identity
-import qualified Data.Map               as Map
+import           Control.Monad.Except
+import qualified Data.Map             as Map
+
 
 type Name = String
 
@@ -21,22 +22,19 @@ data Expr = Lit Int
           | Let Name Expr Expr
     deriving (Show)
 
-{-
-newtype Eval a = Eval { runEval :: a }
-    deriving (Functor, Applicative, Monad)
--- -}
+newtype Eval m a = Eval { runEval :: ExceptT String m a }
+    deriving (Functor, Applicative, Monad, MonadError String)
 
--- {-
-type Eval = Identity
-runEval :: Eval a -> a
-runEval = runIdentity
--- -}
+instance MonadTrans Eval where
+    lift = Eval . lift
 
-eval :: Expr -> Map.Map Name Int -> Eval Int
+
+eval :: MonadError String m => Expr -> Map.Map Name Int -> m Int
 eval (Lit x) _ = return x
 eval (Var x) m = case Map.lookup x m of
     Just v  -> return v
-    Nothing -> fail $ "Var " ++ x ++ " is not bounded"
+    Nothing -> throwError $
+                 x ++ " is not bounded (context: " ++ show m ++ ")"
 eval (Add l r) m = do
     lhs <- eval l m
     rhs <- eval r m
@@ -45,12 +43,16 @@ eval (Mul l r) m = do
     lhs <- eval l m
     rhs <- eval r m
     return $ lhs * rhs
-eval (Div l r) m = do
+eval e@(Div l r) m = do
     lhs <- eval l m
     rhs <- eval r m
     if rhs == 0
-    then fail "Division by zero"
+    then throwError $
+           "Division by zero in " ++ show e ++ " (context: " ++ show m ++ ")"
     else return $ lhs * rhs
 eval (Let v a e) m = do
     newval <- eval a m
     eval e (Map.insert v newval m)
+
+doEval :: Monad m => Eval m a -> m (Either String a)
+doEval ev = runExceptT (runEval ev)
