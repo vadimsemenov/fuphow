@@ -2,19 +2,27 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Expr
-       ( Expr (..)
+       ( Name
+       , Value
+       , Env
+       , Expr (..)
+       , ExprException (..)
+       , Eval (..)
        , eval
        , doEval
-       , Eval (..)
        ) where
 
+import           Control.Exception.Base (ArithException (DivideByZero))
 import           Control.Monad.Except
-import qualified Data.Map             as Map
+import           Control.Monad.Reader
+import qualified Data.Map               as Map
 
 
-type Name = String
+type Name  = String
+type Value = Integer
+type Env   = Map.Map Name Value
 
-data Expr = Lit Int
+data Expr = Lit Value
           | Var Name
           | Add Expr Expr
           | Mul Expr Expr
@@ -22,37 +30,53 @@ data Expr = Lit Int
           | Let Name Expr Expr
     deriving (Show)
 
-newtype Eval m a = Eval { runEval :: ExceptT String m a }
-    deriving (Functor, Applicative, Monad, MonadError String)
+data ExprException = UnboundVarException { getVarName :: Name
+                                         , getEnv     :: Env
+                                         }
+                   | ArithmeticException { getExpr      :: Expr
+                                         , getEnv       :: Env
+                                         , getException :: ArithException
+                                         }
+
+instance Show ExprException where
+    show (UnboundVarException var env) =
+        var ++ " is not bounded [environment: " ++ show env ++ "]"
+    show (ArithmeticException expr env ex) =
+        show ex ++ " in " ++ show expr ++ " [environment: " ++ show env ++ "]"
+
+newtype Eval m a = Eval { runEval :: ReaderT Env (ExceptT ExprException m) a }
+    deriving (Functor, Applicative, Monad, MonadError ExprException, MonadReader Env)
 
 instance MonadTrans Eval where
-    lift = Eval . lift
+    lift = Eval . lift . lift
 
 
-eval :: MonadError String m => Expr -> Map.Map Name Int -> m Int
-eval (Lit x) _ = return x
-eval (Var x) m = case Map.lookup x m of
-    Just v  -> return v
-    Nothing -> throwError $
-                 x ++ " is not bounded (context: " ++ show m ++ ")"
-eval (Add l r) m = do
-    lhs <- eval l m
-    rhs <- eval r m
+eval :: (MonadError ExprException m, MonadReader Env m) => Expr -> m Value
+eval (Lit x) = return x
+eval (Var x) = do
+    env <- ask
+    case Map.lookup x env of
+        Just v  -> return v
+        Nothing -> throwError $ UnboundVarException x env
+eval (Add l r) = do
+    lhs <- eval l
+    rhs <- eval r
     return $ lhs + rhs
-eval (Mul l r) m = do
-    lhs <- eval l m
-    rhs <- eval r m
+eval (Mul l r) = do
+    lhs <- eval l
+    rhs <- eval r
     return $ lhs * rhs
-eval e@(Div l r) m = do
-    lhs <- eval l m
-    rhs <- eval r m
-    if rhs == 0
-    then throwError $
-           "Division by zero in " ++ show e ++ " (context: " ++ show m ++ ")"
-    else return $ lhs * rhs
-eval (Let v a e) m = do
-    newval <- eval a m
-    eval e (Map.insert v newval m)
+eval e@(Div l r) = do
+    lhs <- eval l
+    rhs <- eval r
+    if rhs == 0 then do
+        env <- ask
+        throwError $ ArithmeticException e env DivideByZero
+    else
+        return $ lhs * rhs
+eval (Let v a e) = do
+    newval <- eval a
+    local (Map.insert v newval) (eval e)
 
-doEval :: Monad m => Eval m a -> m (Either String a)
-doEval ev = runExceptT (runEval ev)
+doEval :: Monad m => Env -> Eval m a -> m (Either ExprException a)
+doEval env evaluation = runExceptT (runReaderT (runEval evaluation) env)
