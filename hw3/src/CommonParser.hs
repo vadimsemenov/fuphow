@@ -44,7 +44,7 @@ lineComment :: ExprParser m ()
 lineComment  = L.skipLineComment (T.pack "--")
 
 blockComment :: ExprParser m ()
-blockComment = L.skipBlockComment (T.pack "{-")  (T.pack "-}")
+blockComment = L.skipBlockComment (T.pack "{-") (T.pack "-}")
 
 -- | Same parser but consumes _trailing_ whitespaces (but newlines)
 lexeme :: ExprParser m a -> ExprParser m a

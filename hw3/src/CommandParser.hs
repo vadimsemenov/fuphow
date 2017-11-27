@@ -8,7 +8,7 @@ import           Text.Megaparsec
 
 import           Commands        (CommandType (..))
 import           CommonParser
-import           Expr            (Expr, Name)
+import           Expr            (Expr, Identifier)
 import           ExprParser
 
 
@@ -35,14 +35,14 @@ parsePrint = do
 parseRead :: ExprParser m CommandType
 parseRead = do
     _ <- symbol $ T.pack ">"
-    Read . T.unpack <$> identifier
+    Read <$> identifier
 
-parseAssignment' :: ExprParser m (Name, Expr)
+parseAssignment' :: ExprParser m (Identifier, Expr)
 parseAssignment' = do
     name <- identifier
     eq
     ex   <- expr
-    return (T.unpack name, ex)
+    return (name, ex)
 
 commands :: ExprParser m [CommandType]
 commands = command `sepEndBy` spaceConsumer'

@@ -2,7 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Expr
-       ( Name
+       ( Identifier
        , Value
        , Env
        , Expr (..)
@@ -16,23 +16,24 @@ import           Control.Exception.Base (ArithException (DivideByZero))
 import           Control.Monad.Except
 import           Control.Monad.Reader
 import qualified Data.Map               as Map
+import qualified Data.Text              as T
 
 
-type Name  = String
-type Value = Integer
-type Env   = Map.Map Name Value
+type Identifier = T.Text
+type Value      = Integer
+type Env        = Map.Map Identifier Value
 
 data Expr = Lit Value
-          | Var Name
+          | Var Identifier
           | Add Expr Expr
           | Sub Expr Expr
           | Mul Expr Expr
           | Div Expr Expr
-          | Let Name Expr Expr
+          | Let Identifier Expr Expr
     deriving (Show)
 
-data ExprException = UnboundVarException { getVarName :: Name
-                                         , getEnv     :: Env
+data ExprException = UnboundVarException { getVarIdentifier :: Identifier
+                                         , getEnv           :: Env
                                          }
                    | ArithmeticException { getExpr      :: Expr
                                          , getEnv       :: Env
@@ -41,7 +42,7 @@ data ExprException = UnboundVarException { getVarName :: Name
 
 instance Show ExprException where
     show (UnboundVarException var env) =
-        var ++ " is not bounded [environment: " ++ show env ++ "]"
+        T.unpack var ++ " is not bounded [environment: " ++ show env ++ "]"
     show (ArithmeticException expr env ex) =
         show ex ++ " in " ++ show expr ++ " [environment: " ++ show env ++ "]"
 

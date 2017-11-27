@@ -24,14 +24,14 @@ import           Text.Megaparsec      (ParseError, Token, runParserT)
 import           Expr
 import           ExprParser           (expr)
 
-data CommandType = Declaration Name Expr
-                 | Assignment  Name Expr
+data CommandType = Declaration Identifier Expr
+                 | Assignment  Identifier Expr
                  | Print Expr
-                 | Read Name
+                 | Read Identifier
     deriving (Show)
 
-data VarException = MultipleDeclarationException Name
-                  | NotInScopeException          Name
+data VarException = MultipleDeclarationException Identifier
+                  | NotInScopeException          Identifier
                   | EvalException                ExprException
                   | ParseException               (ParseError (Token T.Text) Void)
     deriving (Show)
@@ -46,18 +46,18 @@ doCommand :: Monad m => Env -> Command m a -> m (Either VarException a)
 doCommand env com = evalStateT (runExceptT (runCommand com)) env
 
 
-declare :: (MonadError VarException m, MonadState Env m) => Name -> Value -> m ()
+declare :: (MonadError VarException m, MonadState Env m) => Identifier -> Value -> m ()
 declare name = doAssignment (not . Map.member name) MultipleDeclarationException name
 
-assign :: (MonadError VarException m, MonadState Env m) => Name -> Value -> m ()
+assign :: (MonadError VarException m, MonadState Env m) => Identifier -> Value -> m ()
 assign name = doAssignment (Map.member name) NotInScopeException name
 
 doAssignment :: ( MonadError VarException m
                 , MonadState Env m
                 )
              => (Env -> Bool)
-             -> (Name -> VarException)
-             -> Name
+             -> (Identifier -> VarException)
+             -> Identifier
              -> Value
              -> m ()
 doAssignment envCheck errorProducer name val = do

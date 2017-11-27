@@ -21,7 +21,7 @@ parseLit :: ExprParser m Expr
 parseLit = Lit <$> value
 
 parseVar :: ExprParser m Expr
-parseVar = (Var . T.unpack) <$> identifier
+parseVar = Var <$> identifier
 
 parseLet :: ExprParser m Expr
 parseLet = betweenParenthesis $ do
@@ -31,7 +31,7 @@ parseLet = betweenParenthesis $ do
     as   <- expr
     reservedWord $ T.pack "in"
     ex   <- expr
-    return $ Let (T.unpack name) as ex
+    return $ Let name as ex
 
 expr :: ExprParser m Expr
 expr = makeExprParser term operators
