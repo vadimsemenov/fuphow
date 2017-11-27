@@ -45,12 +45,23 @@ instance Show ExprException where
     show (ArithmeticException expr env ex) =
         show ex ++ " in " ++ show expr ++ " [environment: " ++ show env ++ "]"
 
-newtype Eval m a = Eval { runEval :: ReaderT Env (ExceptT ExprException m) a }
+newtype Eval m a = Eval { runEval :: ExceptT ExprException (ReaderT Env m) a }
     deriving (Functor, Applicative, Monad, MonadError ExprException, MonadReader Env)
 
 instance MonadTrans Eval where
     lift = Eval . lift . lift
 
+{-
+newtype Eval' e m a = Eval' { runEval' :: ExceptT e (ReaderT Env m) a }
+    deriving (Functor, Applicative, Monad, MonadError e, MonadReader Env)
+
+instance MonadTrans (Eval' e) where
+    lift = Eval' . lift . lift
+
+
+evalWithExcept :: Functor m => (e1 -> e2) -> Eval' e1 m a -> Eval' e2 m a
+evalWithExcept f e = Eval' $ withExceptT f (runEval' e)
+-- -}
 
 eval :: (MonadError ExprException m, MonadReader Env m) => Expr -> m Value
 eval (Lit x) = return x
@@ -84,4 +95,4 @@ eval (Let v a e) = do
     local (Map.insert v newval) (eval e)
 
 doEval :: Monad m => Env -> Eval m a -> m (Either ExprException a)
-doEval env evaluation = runExceptT (runReaderT (runEval evaluation) env)
+doEval env evaluation = runReaderT (runExceptT (runEval evaluation)) env

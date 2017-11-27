@@ -9,6 +9,8 @@ module Commands
        , doCommand
        , declare
        , assign
+       , evalCommand
+       , evalCommands
        ) where
 
 import           Control.Monad.Except
@@ -23,6 +25,7 @@ data CommandType = Declaration Name Expr
 
 data VarException = MultipleDeclarationException Name
                   | NotInScopeException          Name
+                  | EvalException                ExprException
     deriving (Show)
 
 newtype Command m a = Command { runCommand :: ExceptT VarException (StateT Env m) a }
@@ -55,3 +58,23 @@ doAssignment envCheck errorProducer name val = do
         modify (Map.insert name val)
     else
         throwError $ errorProducer name
+
+evalOn :: ( MonadError VarException m
+          , MonadState Env m
+          )
+       => (Value -> m ())
+       -> Expr
+       -> m ()
+evalOn func expr = do
+    env <- get
+    res <- doEval env $ eval expr
+    case res of
+        Left  e -> throwError $ EvalException e
+        Right v -> func v
+
+evalCommand :: (MonadError VarException m, MonadState Env m) => CommandType -> m ()
+evalCommand (Declaration name expr) = evalOn (declare name) expr
+evalCommand (Assignment name expr)  = evalOn (assign name) expr
+
+evalCommands :: (MonadError VarException m, MonadState Env m) => [CommandType] -> m ()
+evalCommands = mapM_ evalCommand

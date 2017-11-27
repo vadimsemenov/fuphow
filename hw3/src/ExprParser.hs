@@ -19,8 +19,8 @@ import           Text.Megaparsec.Char       (alphaNumChar, letterChar, space1, s
 import qualified Text.Megaparsec.Char.Lexer as L
 import           Text.Megaparsec.Expr
 
-import           Expr                       (Expr (..), Name, Value)
 import           Commands                   (CommandType (..))
+import           Expr                       (Expr (..), Name, Value)
 
 
 type ExprParser m a = ParsecT Void T.Text m a
@@ -115,15 +115,14 @@ parseDeclaration = do
     uncurry Declaration <$> parseAssignment'
 
 parseAssignment :: ExprParser m CommandType
-parseAssignment = do
-    uncurry Assignment <$> parseAssignment'
+parseAssignment = uncurry Assignment <$> parseAssignment'
 
 parseAssignment' :: ExprParser m (Name, Expr)
 parseAssignment' = do
     name <- identifier
     eq
     ex   <- expr
-    return $ (T.unpack name, ex)
+    return (T.unpack name, ex)
 
 commands :: ExprParser m [CommandType]
 commands = L.lexeme spaceConsumer' $ many command
