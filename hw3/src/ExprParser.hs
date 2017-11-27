@@ -107,7 +107,9 @@ expr = makeExprParser term operators
                 ]
 
 command :: ExprParser m CommandType
-command = parseDeclaration <|> parseAssignment
+command  =  parseDeclaration
+        <|> parseAssignment
+        <|> parsePrint
 
 parseDeclaration :: ExprParser m CommandType
 parseDeclaration = do
@@ -116,6 +118,11 @@ parseDeclaration = do
 
 parseAssignment :: ExprParser m CommandType
 parseAssignment = uncurry Assignment <$> parseAssignment'
+
+parsePrint :: ExprParser m CommandType
+parsePrint = do
+    _ <- symbol $ T.pack "<"
+    Print <$> expr
 
 parseAssignment' :: ExprParser m (Name, Expr)
 parseAssignment' = do

@@ -21,6 +21,7 @@ import           Expr
 
 data CommandType = Declaration Name Expr
                  | Assignment  Name Expr
+                 | Print Expr
     deriving (Show)
 
 data VarException = MultipleDeclarationException Name
@@ -61,6 +62,7 @@ doAssignment envCheck errorProducer name val = do
 
 evalOn :: ( MonadError VarException m
           , MonadState Env m
+          , MonadIO m
           )
        => (Value -> m ())
        -> Expr
@@ -72,9 +74,20 @@ evalOn func expr = do
         Left  e -> throwError $ EvalException e
         Right v -> func v
 
-evalCommand :: (MonadError VarException m, MonadState Env m) => CommandType -> m ()
+evalCommand :: ( MonadError VarException m
+               , MonadState Env m
+               , MonadIO m
+               )
+            => CommandType
+            -> m ()
 evalCommand (Declaration name expr) = evalOn (declare name) expr
 evalCommand (Assignment name expr)  = evalOn (assign name) expr
+evalCommand (Print expr)            = evalOn (liftIO . print) expr
 
-evalCommands :: (MonadError VarException m, MonadState Env m) => [CommandType] -> m ()
+evalCommands :: ( MonadError VarException m
+                , MonadState Env m
+                , MonadIO m
+                )
+             => [CommandType]
+             -> m ()
 evalCommands = mapM_ evalCommand
