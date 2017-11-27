@@ -25,6 +25,7 @@ type Env   = Map.Map Name Value
 data Expr = Lit Value
           | Var Name
           | Add Expr Expr
+          | Sub Expr Expr
           | Mul Expr Expr
           | Div Expr Expr
           | Let Name Expr Expr
@@ -62,6 +63,10 @@ eval (Add l r) = do
     lhs <- eval l
     rhs <- eval r
     return $ lhs + rhs
+eval (Sub l r) = do
+    lhs <- eval l
+    rhs <- eval r
+    return $ lhs - rhs
 eval (Mul l r) = do
     lhs <- eval l
     rhs <- eval r
