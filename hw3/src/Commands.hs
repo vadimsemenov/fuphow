@@ -16,17 +16,24 @@ module Commands
 import           Control.Monad.Except
 import           Control.Monad.State
 import qualified Data.Map             as Map
-import           Expr
+import qualified Data.Text            as T (Text)
+import qualified Data.Text.IO         as T.IO (getLine)
+import           Data.Void            (Void)
+import           Text.Megaparsec      (ParseError, Token, runParserT)
 
+import           Expr
+import           ExprParser           (expr)
 
 data CommandType = Declaration Name Expr
                  | Assignment  Name Expr
                  | Print Expr
+                 | Read Name
     deriving (Show)
 
 data VarException = MultipleDeclarationException Name
                   | NotInScopeException          Name
                   | EvalException                ExprException
+                  | ParseException               (ParseError (Token T.Text) Void)
     deriving (Show)
 
 newtype Command m a = Command { runCommand :: ExceptT VarException (StateT Env m) a }
@@ -67,9 +74,9 @@ evalOn :: ( MonadError VarException m
        => (Value -> m ())
        -> Expr
        -> m ()
-evalOn func expr = do
+evalOn func ex = do
     env <- get
-    res <- doEval env $ eval expr
+    res <- doEval env $ eval ex
     case res of
         Left  e -> throwError $ EvalException e
         Right v -> func v
@@ -80,9 +87,15 @@ evalCommand :: ( MonadError VarException m
                )
             => CommandType
             -> m ()
-evalCommand (Declaration name expr) = evalOn (declare name) expr
-evalCommand (Assignment name expr)  = evalOn (assign name) expr
-evalCommand (Print expr)            = evalOn (liftIO . print) expr
+evalCommand (Declaration name ex) = evalOn (declare name) ex
+evalCommand (Assignment name ex)  = evalOn (assign name) ex
+evalCommand (Print ex)            = evalOn (liftIO . print) ex
+evalCommand (Read name) = do
+    line <- liftIO T.IO.getLine
+    res  <- runParserT expr "read" line
+    case res of
+        Left  e -> throwError $ ParseException e
+        Right r -> evalOn (modify . Map.insert name) r
 
 evalCommands :: ( MonadError VarException m
                 , MonadState Env m

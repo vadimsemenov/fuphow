@@ -21,6 +21,7 @@ library
   exposed-modules:     Expr
                      , Commands
                      , ExprParser
+                     , CommandParser
   ghc-options:         -Wall
   build-depends:       base >= 4.9 && < 5
                      , containers
