@@ -3,13 +3,12 @@ module CommandParser
        , commands
        ) where
 
-import           Data.Text                  as T
+import           Data.Text       as T
 import           Text.Megaparsec
-import qualified Text.Megaparsec.Char.Lexer as L
 
-import           Commands                   (CommandType (..))
+import           Commands        (CommandType (..))
 import           CommonParser
-import           Expr                       (Expr, Name)
+import           Expr            (Expr, Name)
 import           ExprParser
 
 
@@ -46,4 +45,4 @@ parseAssignment' = do
     return (T.unpack name, ex)
 
 commands :: ExprParser m [CommandType]
-commands = L.lexeme spaceConsumer' $ many command
+commands = command `sepEndBy` spaceConsumer'

@@ -89,7 +89,7 @@ eval e@(Div l r) = do
         env <- ask
         throwError $ ArithmeticException e env DivideByZero
     else
-        return $ lhs * rhs
+        return $ lhs `div` rhs
 eval (Let v a e) = do
     newval <- eval a
     local (Map.insert v newval) (eval e)
