@@ -6,6 +6,8 @@ module ExprParser
        , parseLet
        , identifier
        , reserwedWord
+       , command
+       , commands
        ) where
 
 import           Data.Char                  (isAlphaNum, isSpace)
@@ -18,6 +20,7 @@ import qualified Text.Megaparsec.Char.Lexer as L
 import           Text.Megaparsec.Expr
 
 import           Expr                       (Expr (..), Name, Value)
+import           Commands                   (CommandType (..))
 
 
 type ExprParser m a = ParsecT Void T.Text m a
@@ -102,3 +105,25 @@ expr = makeExprParser term operators
                   , InfixL (Sub <$ T.unpack <$> symbol (T.pack "-"))
                   ]
                 ]
+
+command :: ExprParser m CommandType
+command = parseDeclaration <|> parseAssignment
+
+parseDeclaration :: ExprParser m CommandType
+parseDeclaration = do
+    reserwedWord $ T.pack "mut"
+    uncurry Declaration <$> parseAssignment'
+
+parseAssignment :: ExprParser m CommandType
+parseAssignment = do
+    uncurry Assignment <$> parseAssignment'
+
+parseAssignment' :: ExprParser m (Name, Expr)
+parseAssignment' = do
+    name <- identifier
+    eq
+    ex   <- expr
+    return $ (T.unpack name, ex)
+
+commands :: ExprParser m [CommandType]
+commands = L.lexeme spaceConsumer' $ many command

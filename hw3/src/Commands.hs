@@ -3,7 +3,8 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Commands
-       ( VarException (..)
+       ( CommandType (..)
+       , VarException (..)
        , Command (..)
        , doCommand
        , declare
@@ -15,6 +16,10 @@ import           Control.Monad.State
 import qualified Data.Map             as Map
 import           Expr
 
+
+data CommandType = Declaration Name Expr
+                 | Assignment  Name Expr
+    deriving (Show)
 
 data VarException = MultipleDeclarationException Name
                   | NotInScopeException          Name
