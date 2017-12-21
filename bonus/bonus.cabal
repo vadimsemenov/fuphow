@@ -1,7 +1,7 @@
 name:                bonus
 version:             0.1.0.0
-synopsis:            Synopsis for task 3
-description:         Task 3 for FP ITMO course
+synopsis:            Synopsis for bonus task
+description:         Bonus task for FP ITMO course
 
 homepage:            https://github.com/vadimsemenov/fuphow/tree/master/bonus#readme
 license:             MIT
