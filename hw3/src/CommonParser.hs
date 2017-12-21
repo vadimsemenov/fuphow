@@ -61,7 +61,7 @@ eq :: ExprParser m ()
 eq = void $ symbol (T.pack "=")
 
 reservedWords :: [T.Text]
-reservedWords = map T.pack ["mut", "let", "in"] -- TODO: , "for", "break"]
+reservedWords = map T.pack ["mut", "let", "in", "for", "to"] -- TODO: , "break"]
 
 reservedWord :: T.Text -> ExprParser m ()
 reservedWord w = lexeme (string w *> notFollowedBy alphaNumChar)

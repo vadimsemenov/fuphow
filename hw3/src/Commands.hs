@@ -24,10 +24,13 @@ import           Text.Megaparsec      (ParseError, Token, runParserT)
 import           Expr
 import           ExprParser           (expr)
 
+type CommandScope = [CommandType]
+
 data CommandType = Declaration Identifier Expr
                  | Assignment  Identifier Expr
                  | Print Expr
                  | Read Identifier
+                 | For Expr Expr CommandScope
     deriving (Show)
 
 data VarException = MultipleDeclarationException Identifier
@@ -96,11 +99,23 @@ evalCommand (Read name) = do
     case res of
         Left  e -> throwError $ ParseException e
         Right r -> evalOn (modify . Map.insert name) r
+evalCommand (For from to scope) = do
+    env   <- get
+    fromV <- doEval env $ eval from
+    toV   <- doEval env $ eval to
+    case (fromV, toV) of
+        (Left e, _) -> throwError $ EvalException e
+        (_, Left e) -> throwError $ EvalException e
+        (Right l, Right r) -> replicateM_ (fromIntegral (r - l)) $ do
+            env' <- get
+            evalCommands scope
+            env'' <- get
+            put $ Map.differenceWith (\_ rhs -> Just rhs) env' env''
 
 evalCommands :: ( MonadError VarException m
                 , MonadState Env m
                 , MonadIO m
                 )
-             => [CommandType]
+             => CommandScope
              -> m ()
 evalCommands = mapM_ evalCommand
