@@ -19,9 +19,11 @@ tested-with:         GHC == 8.0.1
 library
   hs-source-dirs:      src
   exposed-modules:     TemplateLib
+                     , Comonads.Renew
   ghc-options:         -Wall
   build-depends:       base >= 4.9 && < 5
                      , template-haskell
+                     , comonad
                      , containers
                      , text
   default-language:    Haskell2010
