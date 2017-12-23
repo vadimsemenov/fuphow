@@ -61,3 +61,17 @@ prev tz@(TreeZipper current ancestors) = prev' current ancestors
 noNext :: TreeZipper a -> TreeZipper a
 noNext = error "There is no next TreeZipper"
 -- noNext = id
+
+instance Functor Ancestor where
+    fmap f (Ancestor val lhs rhs) = Ancestor (f val) (ffmap f lhs) (ffmap f rhs)
+
+instance Functor TreeZipper where
+    fmap f (TreeZipper tree ancestors) =
+      TreeZipper (fmap f tree) (ffmap f ancestors)
+
+ffmap :: Functor f => (a -> b) -> [f a] -> [f b]
+ffmap f = map (fmap f)
+
+instance Comonad TreeZipper where
+    extract (TreeZipper tree _) = extract tree
+    duplicate = undefined
