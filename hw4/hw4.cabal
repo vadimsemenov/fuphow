@@ -20,6 +20,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     TemplateLib
                      , Comonads.Renew
+                     , Comonads.ProjectBuilder
                      , Comonads.RoseTree
   ghc-options:         -Wall
   build-depends:       base >= 4.9 && < 5
