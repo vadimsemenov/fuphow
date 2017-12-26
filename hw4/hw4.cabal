@@ -41,3 +41,13 @@ test-suite hw4-test
   ghc-options:         -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
   other-modules:       Comonads.ProjectBuilderSpec
   default-language:    Haskell2010
+
+benchmark hw4-bench
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      bench
+  main-is:             Main.hs
+  build-depends:       base
+                     , loops
+                     , criterion
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
+  default-language:    Haskell2010
