@@ -6,6 +6,7 @@ module Lenses.FileSystem
        ( FS (..)
        , getFS
        , cd
+       , ls
        ) where
 
 import           Control.Lens
@@ -67,5 +68,14 @@ src :: FS
 [Lenses
       /Users/vadim/Documents/fuphow/hw4/src/Lenses/Basic.hs
       /Users/vadim/Documents/fuphow/hw4/src/Lenses/FileSystem.hs]
+it :: [FS]
+-- -}
+
+ls :: Traversal' FS FS
+ls = contents . each
+
+{-
+λ> src ^.. cd "Lenses" . ls
+[/Users/vadim/Documents/fuphow/hw4/src/Lenses/Basic.hs,/Users/vadim/Documents/fuphow/hw4/src/Lenses/FileSystem.hs]
 it :: [FS]
 -- -}
