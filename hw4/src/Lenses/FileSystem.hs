@@ -1,9 +1,11 @@
 {-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE Rank2Types      #-}
 
 module Lenses.FileSystem
        ( FS (..)
        , getFS
+       , cd
        ) where
 
 import           Control.Lens
@@ -49,4 +51,21 @@ src
          /Users/vadim/Documents/fuphow/hw4/src/Lenses/FileSystem.hs
    /Users/vadim/Documents/fuphow/hw4/src/TemplateLib.hs
 it :: FS
+-- -}
+
+isDir :: FS -> Bool
+isDir (Dir _ _) = True
+isDir _         = False
+
+cd :: FilePath -> Traversal' FS FS
+cd dir = contents . traversed . filtered (\x -> isDir x && x ^. name == dir)
+
+{-
+λ> src <- getFS "/Users/vadim/Documents/fuphow/hw4/src"
+src :: FS
+λ> src ^.. cd "Lenses"
+[Lenses
+      /Users/vadim/Documents/fuphow/hw4/src/Lenses/Basic.hs
+      /Users/vadim/Documents/fuphow/hw4/src/Lenses/FileSystem.hs]
+it :: [FS]
 -- -}
