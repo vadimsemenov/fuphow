@@ -1,7 +1,9 @@
--- {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module TemplateLib
        ( chooseByIndices
+       , OverloadedShow (..)
+       , deriveOverloadedShow
        ) where
 
 
@@ -9,6 +11,7 @@ import           Language.Haskell.TH
 
 import           Data.List           (sort)
 import qualified Data.Map            as Map
+import qualified Data.Text           as T
 
 
 chooseByIndices :: Int -> [Int] -> Q Exp
@@ -33,3 +36,13 @@ nub = nub' . sort
     nub' (a : b : rest) = if a == b
                           then nub (b : rest)
                           else a : nub (b : rest)
+
+
+class OverloadedShow a where
+    showText :: a -> T.Text
+
+deriveOverloadedShow :: Name -> Q [Dec]
+deriveOverloadedShow name = [d|
+                              instance OverloadedShow $(conT name) where
+                                  showText = T.pack . show
+                            |]

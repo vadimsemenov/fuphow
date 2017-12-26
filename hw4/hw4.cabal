@@ -39,6 +39,7 @@ test-suite hw4-test
                      , hspec
                      , comonad
                      , hw4
+                     , text
   ghc-options:         -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
   other-modules:       Comonads.ProjectBuilderSpec
                      , TemplateLibSpec
