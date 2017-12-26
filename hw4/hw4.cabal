@@ -19,6 +19,7 @@ tested-with:         GHC == 8.0.1
 library
   hs-source-dirs:      src
   exposed-modules:     TemplateLib
+                     , Lenses.Basic
                      , Comonads.Renew
                      , Comonads.ProjectBuilder
                      , Comonads.RoseTree
