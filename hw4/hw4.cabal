@@ -35,6 +35,9 @@ test-suite hw4-test
   hs-source-dirs:      test
   main-is:             Spec.hs
   build-depends:       base
+                     , hspec
+                     , comonad
                      , hw4
   ghc-options:         -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
+  other-modules:       Comonads.ProjectBuilderSpec
   default-language:    Haskell2010
